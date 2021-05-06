@@ -5,4 +5,4 @@ run: default
 	go run ./*.go
 
 linux: default
-	go build -o build/dark-fiber ./*.go
+	go build -o build/dark-fiber-stats ./*.go
