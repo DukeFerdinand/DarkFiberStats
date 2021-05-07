@@ -20,9 +20,8 @@ func main() {
 
 	// Setup meat of app, init main data structure
 	sc := MinerStatConfig{
-		MinerId:     os.Getenv("DARK_FIBER_WALLET"),
-		CoinType:    os.Getenv("DARK_FIBER_COIN"),
-		BlockReward: 25000,
+		MinerId:  os.Getenv("DARK_FIBER_WALLET"),
+		CoinType: os.Getenv("DARK_FIBER_COIN"),
 	}
 	sc.PrintConfig()
 	tm := TableManager{
@@ -35,18 +34,6 @@ func main() {
 	//! Nothing changeable should happen outside of this event loop!
 	for {
 		wg.Add(2)
-		// Payouts
-		go func() {
-			defer wg.Done()
-			payouts, payout_err := sc.GetPayouts()
-			// Payouts
-			if payout_err != nil {
-				tm.PrintPayoutError(payout_err)
-			} else {
-				tm.PrintPayouts(payouts)
-			}
-		}()
-
 		// Stats
 		go func() {
 			defer wg.Done()
@@ -56,6 +43,21 @@ func main() {
 				tm.PrintStatsError(stat_err)
 			} else {
 				tm.PrintStats(stats)
+			}
+		}()
+
+		// Payouts
+		go func() {
+			defer wg.Done()
+			payouts, payout_err := sc.GetPayouts()
+
+			// TODO: find a way to remove this and still print tables properly
+			time.Sleep(time.Second * 1)
+			// Payouts
+			if payout_err != nil {
+				tm.PrintPayoutError(payout_err)
+			} else {
+				tm.PrintPayouts(payouts)
 			}
 		}()
 

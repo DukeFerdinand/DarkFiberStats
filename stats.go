@@ -3,8 +3,10 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 
 	tm "github.com/buger/goterm"
@@ -26,16 +28,38 @@ type StatStructure struct {
 }
 
 type MinerStatConfig struct {
-	MinerId     string `json:"minerId"`
-	CoinType    string `json:"coinType"`
-	BlockReward int    `json:"blockReward"`
+	MinerId  string `json:"minerId"`
+	CoinType string `json:"coinType"`
+}
+
+func (c MinerStatConfig) GetBlockReward() float32 {
+	switch coin := c.CoinType; coin {
+	case "btcz":
+		return 11875.0
+	case "bze":
+		return 12.675
+	default:
+		fmt.Println(fmt.Printf("Unsupported coin: %v", coin))
+		os.Exit(2)
+	}
+	return 0
+}
+
+type StatRequestPayload struct {
+	MinerId     string  `json:"minerId"`
+	CoinType    string  `json:"coinType"`
+	BlockReward float32 `json:"blockReward"`
 }
 
 func (c MinerStatConfig) GetPayouts() (PayoutStructure, error) {
 	payload := new(bytes.Buffer)
-	json.NewEncoder(payload).Encode(c)
+	json.NewEncoder(payload).Encode(StatRequestPayload{
+		MinerId:     c.MinerId,
+		CoinType:    c.CoinType,
+		BlockReward: c.GetBlockReward(),
+	})
 
-	res, err := http.Post("https://aggrogator.dev/api/coins/payouts", "application/text", payload)
+	res, err := http.Post("https://aggrogator.dev/api/coins/payouts", "application/json", payload)
 
 	if err != nil {
 		return PayoutStructure{}, err
@@ -63,9 +87,13 @@ func (c MinerStatConfig) GetPayouts() (PayoutStructure, error) {
 
 func (c MinerStatConfig) GetStats() (StatStructure, error) {
 	payload := new(bytes.Buffer)
-	json.NewEncoder(payload).Encode(c)
+	json.NewEncoder(payload).Encode(StatRequestPayload{
+		MinerId:     c.MinerId,
+		CoinType:    c.CoinType,
+		BlockReward: c.GetBlockReward(),
+	})
 
-	res, err := http.Post("https://aggrogator.dev/api/coins/stats", "application/text", payload)
+	res, err := http.Post("https://aggrogator.dev/api/coins/stats", "application/json", payload)
 
 	if err != nil {
 		return StatStructure{}, err
