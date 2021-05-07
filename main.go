@@ -44,6 +44,7 @@ func main() {
 			} else {
 				tm.PrintStats(stats)
 			}
+			tm.WriteScreen()
 		}()
 
 		// Payouts
@@ -52,18 +53,18 @@ func main() {
 			payouts, payout_err := sc.GetPayouts()
 
 			// TODO: find a way to remove this and still print tables properly
-			time.Sleep(time.Second * 1)
+			time.Sleep(time.Millisecond * 500)
 			// Payouts
 			if payout_err != nil {
 				tm.PrintPayoutError(payout_err)
 			} else {
 				tm.PrintPayouts(payouts)
 			}
+			tm.WriteScreen()
 		}()
 
 		wg.Wait()
-		tm.WriteScreen()
-		time.Sleep(time.Second * 15)
+		time.Sleep(time.Second * 10)
 
 		tm.TimesRun += 1
 	}
